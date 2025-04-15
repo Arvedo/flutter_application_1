@@ -4,96 +4,148 @@ void main() {
   runApp(const MyApp());
 }
 
+// Die Klasse 'MyApp' ist ein stateless Widget und definiert das Hauptlayout der App.
 class MyApp extends StatelessWidget {
+  // Konstruktor 'MyApp'. Das 'super.key' vereinfacht das Widget-Schlüssel-Management.
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // Erstellt eine MaterialApp als Basis der App
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'BMI-Calculator',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        // Farbschema der App
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromARGB(255, 92, 138, 74),
+        ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      // Startseite der App
+      home: const MyHomePage(title: 'BMI-Calculator'),
     );
   }
 }
 
+// MyHomePage ist ein StatefulWidget / dynamich aktualisierbar
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  final String title; // schreibt den Titel der Seite.
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+// privates _MyHomePageState erweitert MyHomePage
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  double? _bmi;
+  String _bmiCategory = '';
+  Color _bmiColor = Colors.black;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  //  Eingabefelder
+  final TextEditingController _height = TextEditingController();
+  final TextEditingController _weight = TextEditingController();
+
+  // Berechnung des BMI
+  void _BMI() {
+    double height = double.tryParse(_height.text) ?? 0;
+    double weight = double.tryParse(_weight.text) ?? 0;
+
+    if (height > 0 && weight > 0) {
+      setState(() {
+        // BMI-Berechnung Gewicht / Größe^2
+        _bmi = weight / ((height / 100) * (height / 100));
+        _BmiKat();
+      });
+    }
+  }
+
+  // Festlegung der BMI-Kategorie
+  void _BmiKat() {
+    if (_bmi! < 18.5) {
+      _bmiCategory = 'Untergewicht';
+      _bmiColor = Colors.blue;
+    } else if (_bmi! >= 18.5 && _bmi! < 25) {
+      _bmiCategory = 'Normalgewicht';
+      _bmiColor = Colors.green;
+    } else if (_bmi! >= 25 && _bmi! < 30) {
+      _bmiCategory = 'Übergewicht';
+      _bmiColor = Colors.orange;
+    } else if (_bmi! >= 30 && _bmi! < 35) {
+      _bmiCategory = 'Adipositas Grad I';
+      _bmiColor = Colors.red;
+    } else if (_bmi! >= 35 && _bmi! < 40) {
+      _bmiCategory = 'Adipositas Grad II';
+      _bmiColor = Colors.redAccent;
+    } else {
+      _bmiCategory = 'Adipositas Grad III';
+      _bmiColor = Colors.deepOrange;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        // Hintergrundfarbe der App-Leiste nach Hauptschema
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-
         title: Text(widget.title),
       ),
-      body: widget(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.,
-            children: <Widget>[
-              const Text('You have pushed the button this many times:'),
-              Text(
-                '$_counter',
-                style: Theme.of(context).textTheme.headlineMedium,
+      // Benutzeroberfläche.
+      body: Padding(
+        padding: const EdgeInsets.all(16.0), // Abstand um den Inhalt
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'BMI Calculator', // Titel Testfeld
+              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20), // Abstand hinzu
+            const Text(
+              'Height (cm)',
+              style: TextStyle(fontSize: 18),
+            ), // Textfeld für die Eingabe
+            TextField(
+              controller: _height,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              keyboardType: TextInputType.number, // Eingabe nur für Zahlen.
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Weight (kg)',
+              style: TextStyle(fontSize: 18),
+            ), // Textfeld für die Eingabe des Gewichts.
+            TextField(
+              controller: _weight,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 20),
+            // Button
+            ElevatedButton(onPressed: _BMI, child: const Text('Calculate BMI')),
+            const SizedBox(height: 20),
+            if (_bmi != null)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Zeigt den berechneten BMI
+                  Text(
+                    'Your BMI is ${_bmi!.toStringAsFixed(1)}',
+                    style: TextStyle(fontSize: 24, color: _bmiColor),
+                  ),
+                  const SizedBox(height: 10),
+                  // Zeigt BMI-Kategorie an
+                  Text(
+                    _bmiCategory,
+                    style: TextStyle(fontSize: 20, color: _bmiColor),
+                  ),
+                ],
               ),
-            ],
-          ),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
